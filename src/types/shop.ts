@@ -1,9 +1,21 @@
-export type Product = { id: number; name: string; category: string; price: number; oldPrice?: number; image: string; tag?: string; colors: string[]; stock: number };
-
-export type Order = { id: string; name: string; email: string; address: string; payment: string; total: number; status: string; date: string; items: { name: string; quantity: number }[] };
-
-export type Coupon = { code: string; percent: number; active: boolean };
-
-export type State = { products: Product[]; cart: Record<string, number>; favorites: number[]; orders: Order[]; coupons: Coupon[]; discountCode: string };
-
-export type Shop = State & { ready: boolean; add: (id: number) => boolean; quantity: (id: number, value: number) => void; favorite: (id: number) => void; applyCoupon: (code: string) => boolean; updateProduct: (product: Product) => void; deleteProduct: (id: number) => void; updateCoupon: (coupon: Coupon) => void; updateOrder: (id: string, status: string) => void; placeOrder: (details: { name: string; email: string; address: string; payment: string }, coupon: string) => Order | null };
+export type Product = { id: string; name: string; category: string; categoryKey?: string; categoryId?: string; description?: string; price: number; oldPrice?: number; image: string; tag?: string; colors: string[]; stock: number; specs?: string[]; rating?: number; numReviews?: number };
+export type Category = { id: string; name: string; label: string; image: string; description: string };
+export type User = { id: string; name: string; email: string; isAdmin: boolean };
+export type ShippingAddress = { address: string; city: string; postalCode: string; country: string };
+export type CheckoutDetails = ShippingAddress & { payment: 'COD' };
+export type Order = { id: string; userId: string; name: string; email: string; address: string; payment: string; total: number; status: string; date: string; isPaid: boolean; isDelivered: boolean; isCancelled: boolean; items: { name: string; quantity: number; productId: string }[] };
+export type Coupon = { id?: string; code: string; percent: number; active: boolean; expirationDate?: string; applicableCategories?: string[] };
+export type OrderAction = 'deliver' | 'pay' | 'cancel';
+export type DashboardStats = { dailyOrders: { _id: string; totalSales: number; count: number }[]; statusStats: { _id: boolean; count: number }[]; topProducts: { _id: string; name: string; totalQty: number }[] };
+export type State = { products: Product[]; categories: Category[]; cart: Record<string, number>; favorites: string[]; orders: Order[]; coupons: Coupon[]; discountCode: string };
+export type Shop = State & {
+  ready: boolean; loading: boolean; error: string; mutating: boolean; privateLoading: boolean; privateError: string;
+  users: User[]; stats: DashboardStats | null; appliedCoupon: Coupon | null;
+  refresh: () => Promise<void>; refreshPrivate: () => Promise<void>;
+  add: (id: string) => boolean; quantity: (id: string, value: number) => void; favorite: (id: string) => void;
+  applyCoupon: (code: string) => Promise<void>; clearCoupon: () => void;
+  updateProduct: (product: Product) => Promise<void>; deleteProduct: (id: string) => Promise<void>;
+  updateCoupon: (coupon: Coupon) => Promise<void>; deleteCoupon: (id: string) => Promise<void>;
+  updateOrder: (id: string, action: OrderAction) => Promise<void>;
+  placeOrder: (details: CheckoutDetails, coupon: string) => Promise<Order>;
+};

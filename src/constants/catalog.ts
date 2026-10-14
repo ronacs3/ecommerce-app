@@ -1,12 +1,15 @@
-export const green = '#485c43';
+export const green = '#0f766e';
 
-export const heroImage = 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1800&q=90';
+export const heroImage = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1800&q=85';
 
 export const categoryImages = [
-  'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?auto=format&fit=crop&w=600&q=85',
-  'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=600&q=85',
-  'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=600&q=85',
-  'https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&w=600&q=85',
+  'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=85',
+  'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=600&q=85',
+  'https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=600&q=85',
+  'https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=600&q=85',
 ];
 
-export const categories = ['Furniture', 'Decor', 'Lighting', 'Textiles'];
+export const categories = ['Laptop', 'Điện thoại', 'Phụ kiện', 'Tai nghe', 'Màn hình', 'Đồng hồ'];
+export const categoryIcons = ['laptop', 'phone', 'tag', 'headphones', 'monitor', 'watch'];
+export const SHIPPING_THRESHOLD = 500000;
+export const SHIPPING_FEE = 30000;

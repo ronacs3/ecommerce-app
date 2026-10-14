@@ -8,6 +8,7 @@ export type StoreUI = {
   setSelected: (product: Product | null) => void;
   add: (product: Product) => void;
   search: string;
+  setSearch: (search: string) => void;
   sort: string;
   setSort: (sort: string) => void;
 };

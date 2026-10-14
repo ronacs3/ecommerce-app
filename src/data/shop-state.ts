@@ -1,4 +1,4 @@
 import type { State } from '@/types/shop';
-import { initialProducts } from './products';
 
-export const initialState: State = { products: initialProducts, cart: {}, favorites: [], orders: [], discountCode: '', coupons: [{ code: 'WELCOME10', percent: 10, active: true }, { code: 'HOME20', percent: 20, active: true }] };
+// API-owned data always starts empty. Demo fixtures are never loaded at runtime.
+export const initialState: State = { products: [], categories: [], cart: {}, favorites: [], orders: [], coupons: [], discountCode: '' };

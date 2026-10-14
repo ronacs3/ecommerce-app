@@ -1,26 +1,6 @@
-import { Button } from '@/components/common/Button';
-import { Icon } from '@/components/common/Icon';
-import { ProductGrid } from '@/components/products/ProductGrid';
-import { categories,categoryImages,green,heroImage } from '@/constants/catalog';
-import { useShop } from '@/hooks/useShop';
-import { useStoreUI } from '@/hooks/useStoreUI';
-import { s } from '@/styles/store';
-import type { Product } from '@/types/shop';
-import { useState } from 'react';
-import { Image,Pressable,Text,TextInput,View } from 'react-native';
+import { TechHero } from '@/components/home/TechHero';
+import CatalogPage from './CatalogPage';
+
 export default function HomePage() {
-  const { compact, go, notify, setSelected, add } = useStoreUI();
-  const shop = useShop();
-  const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
-  const grid = (items: Product[]) => <ProductGrid products={items} compact={compact} onSelect={setSelected} onAdd={add} />;
-  return <>
-    <View style={[s.hero, compact && { height: 470 }]}><Image source={{ uri: heroImage }} resizeMode="cover" style={s.absoluteFill} /><View style={[s.heroWash, { width: compact ? '100%' : '52%', opacity: compact ? 0.91 : 0.97 }]} /><View style={[s.heroContent, compact && { padding: 27 }]}><View style={s.eyebrowRow}><View style={s.eyebrowLine} /><Text style={s.eyebrow}>THE ART OF SLOW LIVING</Text></View><Text style={[s.heroTitle, compact && { fontSize: 43, lineHeight: 53 }]}>Thoughtful things.{String.fromCharCode(10)}Beautiful <Text style={{ fontStyle: 'italic', color: green }}>living.</Text></Text><Text style={s.heroDescription}>Bring intention to your everyday with pieces{String.fromCharCode(10)}that feel as good as they look.</Text><Button onPress={() => go('/shop')}>Explore the collection     →</Button><View style={s.heroFoot}><View style={s.smallAvatars}>{['photo-1534528741775-53994a69daeb', 'photo-1506794778202-cad84cf45f1d', 'photo-1500648767791-00dcc994a43e'].map((p, i) => <Image key={p} source={{ uri: `https://images.unsplash.com/${p}?auto=format&fit=crop&w=70&h=70&q=80` }} style={[s.miniAvatar, { marginLeft: i ? -8 : 0 }]} />)}</View><View><Text style={{ color: '#6d795a', fontSize: 11, letterSpacing: 2 }}>★★★★★</Text><Text style={s.heroReview}>Loved by 2,000+ happy homes</Text></View></View></View>{!compact && <View style={s.heroCaption}><View style={s.captionDot} /><Text style={s.heroCaptionText}>The considered home · Spring collection ‘26</Text></View>}<View style={s.heroDots}><View style={[s.heroDot, { width: 20, backgroundColor: green }]} /><View style={s.heroDot} /><View style={s.heroDot} /></View></View>
-    <View style={[s.benefits, compact && { flexWrap: 'wrap', gap: 20 }]}>{[['truck', 'Free shipping', 'On orders over $150'], ['leaf', 'Thoughtfully made', 'Quality with a lighter footprint'], ['box', '30-day returns', 'Find your perfect fit'], ['shield', 'Secure checkout', 'A little peace of mind']].map(([icon, title, subtitle]) => <View key={title} style={[s.benefit, compact && { width: '46%' }]}><View style={s.benefitIcon}><Icon name={icon} color={green} size={21} /></View><View style={{ flexShrink: 1 }}><Text style={s.benefitTitle}>{title}</Text><Text style={s.benefitSubtitle}>{subtitle}</Text></View></View>)}</View>
-    <View style={s.sectionHeading}><View><Text style={s.sectionTitle}>Find your kind of beautiful</Text><Text style={s.sectionSubtitle}>Small details. A world of difference.</Text></View><Pressable onPress={() => go('/shop')}><Text style={s.viewLink}>Browse all categories  ↗</Text></Pressable></View>
-    <View style={s.categories}>{categories.map((c, i) => <Pressable key={c} onPress={() => go(`/shop?category=${c}`)} style={({ pressed }) => [s.categoryCard, { width: compact ? '48%' : '23.5%' }, pressed && { opacity: 0.85 }]}><Image source={{ uri: categoryImages[i] }} style={s.categoryImage} resizeMode="cover" /><View style={s.categoryLabel}><Text style={s.categoryName}>{c}</Text><View style={s.circleArrow}><Icon name="arrow" size={16} color={green} /></View></View></Pressable>)}</View>
-    <View style={[s.sectionHeading, { marginTop: 36 }]}><View><View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}><Text style={s.sectionTitle}>Everyday favorites</Text><View style={s.smallPill}><Text style={{ fontSize: 8, color: green, letterSpacing: 0.5 }}>THE GOOD STUFF</Text></View></View><Text style={s.sectionSubtitle}>The pieces you keep coming back to. We get it.</Text></View><Pressable onPress={() => go('/shop')}><Text style={s.viewLink}>Shop all favorites  ↗</Text></Pressable></View>
-    {grid(shop.products.slice(0, 4))}
-    <View style={[s.newsletter, compact && { flexDirection: 'column', alignItems: 'stretch', gap: 20 }]}><View><Text style={s.sectionTitle}>Good things, in your inbox.</Text><Text style={s.sectionSubtitle}>New finds, thoughtful stories, and 10% off your first order.</Text></View><View style={{ flexDirection: 'row', gap: 8, maxWidth: 410, flex: 1 }}><TextInput accessibilityLabel="Newsletter email" style={[s.field, { flex: 1, backgroundColor: '#fff', minWidth: 0 }]} placeholder="Your email address" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" /><Button onPress={() => { if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setSubscribed(true); notify('Welcome! Use WELCOME10 for 10% off. Newsletter signup is a demo.'); } else notify('Please enter a valid email address.'); }}>{subscribed ? 'Subscribed ✓' : 'Sign me up ↗'}</Button></View></View>
-  </>;
+  return <><TechHero /><CatalogPage /></>;
 }

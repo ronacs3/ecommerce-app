@@ -1,1 +1,1 @@
-export const money = (value: number) => `$${value.toFixed(2)}`;
+export const money = (value: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value);

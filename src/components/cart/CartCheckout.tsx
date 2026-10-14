@@ -1,28 +1,73 @@
+import { useState } from 'react';
+import { Pressable, Text, TextInput, View } from 'react-native';
 import { Button } from '@/components/common/Button';
 import { Field } from '@/components/common/Field';
 import { Icon } from '@/components/common/Icon';
+import { ProductImage } from '@/components/products/ProductImage';
 import { green } from '@/constants/catalog';
+import { useAuth } from '@/hooks/useAuth';
 import { useShop } from '@/hooks/useShop';
+import { errorMessage } from '@/services/api/http';
 import { s } from '@/styles/store';
-import { checkoutTotals } from '@/utils/commerce';
+import type { Order } from '@/types/shop';
+import { cartTotals } from '@/utils/commerce';
 import { money } from '@/utils/money';
-import { useState } from 'react';
-import { Image,Pressable,Text,TextInput,View } from 'react-native';
 
 export function CartCheckout({ checkout, compact, notify, go }: { checkout: boolean; compact: boolean; notify: (m: string) => void; go: (r: string) => void }) {
   const shop = useShop();
+  const auth = useAuth();
   const [coupon, setCoupon] = useState(shop.discountCode);
-  const applied = shop.discountCode;
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
-  const [payment, setPayment] = useState('Cash on delivery');
-  const [orderId, setOrderId] = useState('');
+  const [city, setCity] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  const [country, setCountry] = useState('Việt Nam');
+  const [placed, setPlaced] = useState<Order | null>(null);
   const [error, setError] = useState('');
   const lines = shop.products.filter(p => shop.cart[p.id] > 0);
-  const subtotal = lines.reduce((sum, p) => sum + p.price * shop.cart[p.id], 0);
-  const percent = shop.coupons.find(c => c.active && c.code === applied)?.percent || 0;
-  const { discount, shipping } = checkoutTotals(subtotal, percent, !!lines.length);
-  if (orderId) return <View style={s.empty}><View style={s.successIcon}><Icon name="check" size={35} color={green} /></View><Text style={s.pageTitle}>A little joy is on its way.</Text><Text style={s.sectionSubtitle}>Order {orderId} has been placed. This is a demo order.</Text><Button onPress={() => go('/account')}>View your order →</Button><Button secondary onPress={() => go('/shop')}>Keep exploring</Button></View>;
-  return <><View style={s.pageHeading}><Text style={s.eyebrow}>{checkout ? 'THE LAST LITTLE STEP' : 'YOUR THOUGHTFUL FINDS'}</Text><Text style={s.pageTitle}>{checkout ? 'Make yourself at home.' : 'Your shopping bag.'}</Text><Text style={s.sectionSubtitle}>{checkout ? 'A few details, and your favorites are on their way.' : 'Good things, thoughtfully chosen.'}</Text></View>{!lines.length ? <View style={s.empty}><Icon name="bag" size={42} color={green} /><Text style={s.sectionTitle}>Your bag is waiting for something lovely.</Text><Button onPress={() => go('/shop')}>Discover your next favorite →</Button></View> : <View style={[s.checkoutLayout, compact && { flexDirection: 'column', alignItems: 'stretch' }]}><View style={{ flex: 1, gap: 24 }}>{checkout ? <View style={s.panel}><Text style={s.sectionTitle}>Delivery details</Text><Field label="Full name" value={name} onChange={setName} placeholder="Jamie Davis" /><Field label="Email address" value={email} onChange={setEmail} placeholder="you@example.com" /><Field label="Full delivery address" value={address} onChange={setAddress} placeholder="Street, city, postal code, country" /><Text style={[s.fieldLabel, { marginTop: 10 }]}>Payment method · Demo checkout</Text>{['Cash on delivery', 'Demo card payment'].map(method => <Pressable key={method} onPress={() => setPayment(method)} style={[s.paymentOption, payment === method && { borderColor: green, backgroundColor: '#f0f2eb' }]}><Text style={{ color: green }}>{payment === method ? '◉' : '○'}  {method}</Text></Pressable>)}<Text style={s.sectionSubtitle}>No real charge will be made. Payment integration is not connected.</Text></View> : lines.map(p => <View key={p.id} style={s.cartLine}><Image source={{ uri: p.image }} style={[s.cartImage, compact && { width: 80, height: 110 }]} /><View style={{ flex: 1, gap: 10 }}><Text style={s.productCategory}>{p.category}</Text><Text style={s.productName}>{p.name}</Text><Text style={s.price}>{money(p.price)}</Text><View style={s.quantity}><Pressable accessibilityLabel="Decrease quantity" onPress={() => shop.quantity(p.id, shop.cart[p.id] - 1)}><Text style={s.quantityText}>−</Text></Pressable><Text>{shop.cart[p.id]}</Text><Pressable accessibilityLabel="Increase quantity" onPress={() => shop.quantity(p.id, shop.cart[p.id] + 1)}><Text style={s.quantityText}>+</Text></Pressable></View></View><Pressable accessibilityLabel={`Remove ${p.name}`} onPress={() => shop.quantity(p.id, 0)}><Icon name="close" size={18} /></Pressable></View>)}<Button secondary onPress={() => go(checkout ? '/cart' : '/shop')}>← {checkout ? 'Back to your bag' : 'Continue shopping'}</Button></View><View style={[s.summary, !compact && { width: 330 }]}><Text style={s.sectionTitle}>Order summary</Text>{checkout && lines.map(p => <View key={p.id} style={s.summaryRow}><Text style={[s.sectionSubtitle, { flex: 1 }]}>{p.name} × {shop.cart[p.id]}</Text><Text style={s.fieldLabel}>{money(p.price * shop.cart[p.id])}</Text></View>)}<View style={s.summaryRow}><Text style={s.sectionSubtitle}>Subtotal</Text><Text>{money(subtotal)}</Text></View><View style={s.summaryRow}><Text style={s.sectionSubtitle}>Shipping</Text><Text style={{ color: green }}>{shipping ? money(shipping) : 'Complimentary'}</Text></View>{percent > 0 && <View style={s.summaryRow}><Text style={s.sectionSubtitle}>{applied} ({percent}%)</Text><Text style={{ color: green }}>−{money(discount)}</Text></View>}<View style={{ flexDirection: 'row', gap: 8 }}><TextInput accessibilityLabel="Discount code" style={[s.field, { flex: 1, minWidth: 0 }]} value={coupon} onChangeText={setCoupon} placeholder="Discount code" autoCapitalize="characters" /><Button secondary onPress={() => { const code = coupon.trim().toUpperCase(); if (shop.applyCoupon(code)) { setError(''); notify('Your discount has been applied.'); } else { setError('This code is invalid or inactive.'); } }}>Apply</Button></View><Text style={{ color: green, fontSize: 11 }}>A warm welcome: try WELCOME10</Text>{!!error && <Text style={{ color: '#a54a36', fontSize: 12 }}>{error}</Text>}<View style={[s.summaryRow, { borderTopWidth: 1, borderTopColor: '#dedfd6', paddingTop: 20 }]}><Text style={s.productName}>Total</Text><Text style={{ fontSize: 23, color: green }}>{money(subtotal - discount + shipping)}</Text></View><Button onPress={() => { if (!checkout) { go('/checkout'); return; } if (!name.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || address.trim().length < 10) { setError('Please provide your name, valid email, and full delivery address.'); return; } const order = shop.placeOrder({ name: name.trim(), email: email.trim(), address: address.trim(), payment }, applied); if (order) setOrderId(order.id); else setError('Please check product availability and try again.'); }}>{checkout ? 'Place demo order →' : 'Continue to checkout →'}</Button><Text style={[s.sectionSubtitle, { textAlign: 'center', fontSize: 11 }]}>✓ Secure shopping · 30-day returns</Text></View></View>}</>;
+  const totals = cartTotals(shop.products, shop.cart, shop.appliedCoupon);
+  const unavailable = lines.some(p => shop.cart[p.id] > p.stock || p.stock <= 0);
+  async function apply() {
+    setError('');
+    try { await shop.applyCoupon(coupon); setCoupon(coupon.trim().toUpperCase()); notify('Đã xác nhận mã giảm giá từ cửa hàng.'); } catch (e) { setError(errorMessage(e)); }
+  }
+  async function submit() {
+    if (!checkout) { go('/checkout'); return; }
+    if (!auth.user) { go('/login?redirect=/checkout'); return; }
+    if (address.trim().length < 5 || !city.trim() || !postalCode.trim() || !country.trim()) { setError('Vui lòng nhập địa chỉ, tỉnh/thành phố, mã bưu chính và quốc gia.'); return; }
+    setError('');
+    try { setPlaced(await shop.placeOrder({ address, city, postalCode, country, payment: 'COD' }, shop.discountCode)); }
+    catch (e) { setError(errorMessage(e)); }
+  }
+  if (placed) return <View style={s.empty}><View style={s.successIcon}><Icon name="check" size={35} color={green} /></View><Text style={s.pageTitle}>Đặt hàng thành công!</Text><Text style={s.sectionSubtitle}>Đơn hàng #{placed.id} đã được lưu trên hệ thống.</Text><Text style={s.price}>Tổng thanh toán: {money(placed.total)}</Text><Text style={s.sectionSubtitle}>Thanh toán khi nhận hàng (COD).</Text><Button onPress={() => go('/account')}>Xem đơn hàng →</Button><Button secondary onPress={() => go('/')}>Tiếp tục mua sắm</Button></View>;
+  if (shop.loading && !shop.products.length) return <View style={s.empty}><Text style={s.sectionSubtitle}>Đang tải giỏ hàng…</Text></View>;
+  return <>
+    <View style={s.pageHeading}><Text style={s.eyebrow}>{checkout ? 'HOÀN TẤT ĐƠN HÀNG' : 'GIỎ HÀNG TECHSHOP'}</Text><Text style={s.pageTitle}>{checkout ? 'Thông tin thanh toán' : 'Giỏ hàng của bạn'}</Text><Text style={s.sectionSubtitle}>{checkout ? 'Kiểm tra thông tin trước khi gửi đơn hàng tới cửa hàng.' : 'Kiểm tra sản phẩm và áp mã ưu đãi trước khi thanh toán.'}</Text></View>
+    {!lines.length ? <View style={s.empty}><Icon name="bag" size={42} color={green} /><Text style={s.sectionTitle}>Giỏ hàng của bạn đang trống</Text><Button onPress={() => go('/')}>Khám phá sản phẩm →</Button></View> : <View style={[s.checkoutLayout, compact && { flexDirection: 'column', alignItems: 'stretch' }]}>
+      <View style={{ flex: 1, gap: 24 }}>
+        {checkout ? <View style={s.panel}>
+          <Text style={s.sectionTitle}>Thông tin nhận hàng</Text>
+          {!auth.ready ? <Text style={s.sectionSubtitle}>Đang kiểm tra phiên đăng nhập…</Text> : !auth.user ? <><Text style={s.sectionSubtitle}>Vui lòng đăng nhập để tạo đơn hàng và nhận thông báo.</Text><Button onPress={() => go('/login?redirect=/checkout')}>Đăng nhập để đặt hàng</Button></> : <Text style={s.sectionSubtitle}>{auth.user.name} · {auth.user.email}</Text>}
+          <Field label="Địa chỉ nhận hàng" value={address} onChange={setAddress} placeholder="Số nhà, tên đường, phường/xã" />
+          <Field label="Tỉnh / Thành phố" value={city} onChange={setCity} placeholder="Hà Nội" />
+          <Field label="Mã bưu chính" value={postalCode} onChange={setPostalCode} placeholder="100000" />
+          <Field label="Quốc gia" value={country} onChange={setCountry} />
+          <Text style={s.fieldLabel}>Phương thức thanh toán</Text><View style={[s.paymentOption, { borderColor: green, backgroundColor: '#f0fdfa' }]}><Text style={{ color: green }}>◉ Thanh toán khi nhận hàng (COD)</Text></View>
+          <Text style={s.sectionSubtitle}>Đơn hàng được tạo trên hệ thống khi bạn bấm Đặt hàng. Cổng thanh toán trực tuyến chưa được cung cấp bởi API này.</Text>
+        </View> : lines.map(p => <View key={p.id} style={s.cartLine}><ProductImage uri={p.image} style={[s.cartImage, compact && { width: 80, height: 110 }]} /><View style={{ flex: 1, gap: 10 }}><Text style={s.productCategory}>{p.category}</Text><Text style={s.productName}>{p.name}</Text><Text style={s.price}>{money(p.price)}</Text><Text style={{ color: shop.cart[p.id] > p.stock ? '#dc2626' : '#64748b', fontSize: 11 }}>Còn {p.stock} sản phẩm</Text><View style={s.quantity}><Pressable disabled={shop.mutating} accessibilityLabel="Giảm số lượng" onPress={() => shop.quantity(p.id, shop.cart[p.id] - 1)}><Text style={s.quantityText}>−</Text></Pressable><Text>{shop.cart[p.id]}</Text><Pressable disabled={shop.mutating || shop.cart[p.id] >= p.stock} accessibilityLabel="Tăng số lượng" onPress={() => shop.quantity(p.id, shop.cart[p.id] + 1)}><Text style={s.quantityText}>+</Text></Pressable></View></View><Pressable disabled={shop.mutating} accessibilityLabel={`Xóa ${p.name}`} onPress={() => shop.quantity(p.id, 0)}><Icon name="close" size={18} /></Pressable></View>)}
+        <Button secondary onPress={() => go(checkout ? '/cart' : '/')}>← {checkout ? 'Quay lại giỏ hàng' : 'Tiếp tục mua sắm'}</Button>
+      </View>
+      <View style={[s.summary, !compact && { width: 350 }]}>
+        <Text style={s.sectionTitle}>Tóm tắt đơn hàng</Text>
+        {checkout && lines.map(p => <View key={p.id} style={s.summaryRow}><Text style={[s.sectionSubtitle, { flex: 1 }]}>{p.name} × {shop.cart[p.id]}</Text><Text style={s.fieldLabel}>{money(p.price * shop.cart[p.id])}</Text></View>)}
+        <View style={s.summaryRow}><Text style={s.sectionSubtitle}>Tạm tính</Text><Text>{money(totals.subtotal)}</Text></View><View style={s.summaryRow}><Text style={s.sectionSubtitle}>Phí vận chuyển</Text><Text style={{ color: green }}>{totals.shipping ? money(totals.shipping) : 'Miễn phí'}</Text></View>
+        {shop.appliedCoupon && <><View style={s.summaryRow}><Text style={[s.sectionSubtitle, { flex: 1 }]}>{shop.discountCode} ({shop.appliedCoupon.percent}% trên sản phẩm phù hợp)</Text><Text style={{ color: green }}>−{money(totals.discount)}</Text></View><Pressable disabled={shop.mutating} onPress={() => { shop.clearCoupon(); setCoupon(''); }}><Text style={s.underlink}>Bỏ mã giảm giá</Text></Pressable></>}
+        <View style={{ flexDirection: 'row', gap: 8 }}><TextInput accessibilityLabel="Mã giảm giá" editable={!shop.mutating} style={[s.field, { flex: 1, minWidth: 0 }]} value={coupon} onChangeText={setCoupon} placeholder="Mã giảm giá" autoCapitalize="characters" /><Button disabled={shop.mutating} secondary onPress={() => { void apply(); }}>Áp dụng</Button></View>
+        {unavailable && <Text style={{ color: '#dc2626', fontSize: 12 }}>Một số sản phẩm không đủ tồn kho. Vui lòng điều chỉnh giỏ hàng.</Text>}
+        {!!error && <Text accessibilityLiveRegion="polite" style={{ color: '#dc2626', fontSize: 12 }}>{error}</Text>}
+        <View style={[s.summaryRow, { borderTopWidth: 1, borderTopColor: '#e2e8f0', paddingTop: 20 }]}><Text style={s.productName}>Tổng dự kiến</Text><Text style={{ fontSize: 23, color: green }}>{money(totals.total)}</Text></View>
+        <Button disabled={shop.mutating || unavailable || (checkout && !auth.ready)} onPress={() => { void submit(); }}>{shop.mutating ? 'Đang xử lý…' : checkout ? auth.user ? 'Đặt hàng →' : 'Đăng nhập để đặt hàng →' : 'Tiến hành thanh toán →'}</Button>
+        <Text style={[s.sectionSubtitle, { fontSize: 11, textAlign: 'center' }]}>Giá và mã giảm giá được kiểm tra lại trước khi đặt hàng.</Text>
+      </View>
+    </View>}
+  </>;
 }

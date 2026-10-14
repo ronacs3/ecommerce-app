@@ -1,21 +1,21 @@
-import type { State } from '@/types/shop';
 import { Platform } from 'react-native';
+import { API_URL } from '@/config/api';
 
-const STORAGE_KEY = 'form-field-shop-v1';
-
-export function loadShopState(fallback: State): State {
-  if (Platform.OS !== 'web') return fallback;
+type Preferences = { cart: Record<string, number>; favorites: string[] };
+const KEY = `techshop-api-cart-v1:${API_URL}`;
+export function loadPreferences(): Preferences {
+  const empty: Preferences = { cart: {}, favorites: [] };
+  if (Platform.OS !== 'web') return empty;
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return fallback;
-    const value = JSON.parse(saved);
-    if (Array.isArray(value.products) && Array.isArray(value.orders) && Array.isArray(value.coupons) && Array.isArray(value.favorites) && value.cart) return { ...fallback, ...value };
-  } catch { /* Storage can be unavailable in private browsing. */ }
-  return fallback;
+    const text = localStorage.getItem(KEY);
+    if (!text) return empty;
+    const saved = JSON.parse(text);
+    const cart: Record<string, number> = {};
+    if (saved.cart && typeof saved.cart === 'object') for (const [id, quantity] of Object.entries(saved.cart)) if (typeof quantity === 'number' && Number.isInteger(quantity) && quantity > 0 && /^[a-f\d]{24}$/i.test(id)) cart[id] = quantity;
+    return { cart, favorites: Array.isArray(saved.favorites) ? saved.favorites.filter((id: unknown) => typeof id === 'string') : [] };
+  } catch { return empty; }
 }
-
-export function saveShopState(state: State): void {
+export function savePreferences(value: Preferences) {
   if (Platform.OS !== 'web') return;
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-  catch { /* Continue with session state. */ }
+  try { localStorage.setItem(KEY, JSON.stringify(value)); } catch { /* Preferences remain available in this session. */ }
 }

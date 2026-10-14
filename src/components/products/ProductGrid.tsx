@@ -4,13 +4,28 @@ import { useShop } from '@/hooks/useShop';
 import { s } from '@/styles/store';
 import type { Product } from '@/types/shop';
 import { money } from '@/utils/money';
-import { Image,Pressable,Text,View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { ProductImage } from './ProductImage';
 
-export function ProductGrid({ products, compact, onSelect, onAdd }: { products: Product[]; compact: boolean; onSelect: (p: Product) => void; onAdd: (p: Product) => void }) {
+type Props = { products: Product[]; compact: boolean; columns?: number; onSelect: (p: Product) => void; onAdd: (p: Product) => void };
+
+export function ProductGrid({ products, compact, columns = compact ? 1 : 3, onSelect, onAdd }: Props) {
   const shop = useShop();
-  return <View style={s.productGrid}>{products.map(p => <View key={p.id} style={[s.productCard, { width: compact ? '48%' : '23.5%' }]}>
-    <Pressable onPress={() => onSelect(p)} style={({ pressed }) => [s.productImageWrap, compact && { height: 190 }, pressed && { opacity: 0.9 }]}><Image source={{ uri: p.image }} style={s.productImage} resizeMode="cover" />{p.tag && <View style={[s.productTag, p.tag === 'New' && { backgroundColor: '#edf0e5' }]}><Text style={s.productTagText}>{p.tag}</Text></View>}</Pressable>
-    <Pressable accessibilityLabel={`Save ${p.name}`} onPress={() => shop.favorite(p.id)} style={s.favoriteButton}>{shop.favorites.includes(p.id) ? <Text style={{ color: green, fontSize: 19 }}>♥</Text> : <Icon name="heart" size={15} color={green} />}</Pressable>
-    <View style={{ paddingTop: 14, gap: 7 }}><Text style={s.productCategory}>{p.category}</Text><Pressable onPress={() => onSelect(p)}><Text numberOfLines={1} style={s.productName}>{p.name}</Text></Pressable><View style={s.productBottom}><Text style={s.price}>{money(p.price)} <Text style={s.oldPrice}>{p.oldPrice ? money(p.oldPrice) : ''}</Text></Text><Pressable accessibilityLabel={`Add ${p.name} to bag`} onPress={() => onAdd(p)} style={s.addSmall}><Text style={{ fontSize: 18, color: green }}>+</Text></Pressable></View><View style={s.swatches}>{p.colors.map(c => <View key={c} style={[s.swatch, { backgroundColor: c }]} />)}<Text style={{ fontSize: 9, color: '#9c9e96' }}>+{p.colors.length} colors</Text></View></View>
+  return <View style={s.productGrid}>{products.map(p => <View key={p.id} style={[s.productCard, { width: columns === 1 ? '100%' : columns === 2 ? '48%' : '31.5%' }]}>
+    <Pressable accessibilityLabel={`Xem ${p.name}`} onPress={() => onSelect(p)} style={({ pressed }) => [s.productImageWrap, pressed && { opacity: 0.85 }]}>
+      <ProductImage uri={p.image} style={s.productImage} />
+      {p.tag && <View style={s.productTag}><Text style={s.productTagText}>{p.tag}</Text></View>}
+    </Pressable>
+    <Pressable accessibilityLabel={`Yêu thích ${p.name}`} hitSlop={7} onPress={() => shop.favorite(p.id)} style={s.favoriteButton}>{shop.favorites.includes(p.id) ? <Text style={{ color: green, fontSize: 20 }}>♥</Text> : <Icon name="heart" size={16} color={green} />}</Pressable>
+    <View style={{ gap: 8, paddingTop: 16 }}>
+      <Text style={s.productCategory}>{p.category}</Text>
+      <Pressable onPress={() => onSelect(p)}><Text numberOfLines={2} style={[s.productName, { minHeight: 44 }]}>{p.name}</Text></Pressable>
+      <View style={{ minHeight: 38 }}>{(p.specs || ['Sản phẩm chính hãng', 'Bảo hành theo nhà sản xuất']).map(spec => <Text key={spec} numberOfLines={1} style={s.productSpec}>{spec}</Text>)}</View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}><Icon name="shield" size={12} color={green} /><Text style={{ fontSize: 11, color: '#64748b' }}>Chính hãng</Text><Text style={{ color: '#cbd5e1', fontSize: 11 }}>·</Text><Text style={{ fontSize: 10, color: p.stock ? green : '#ef4444' }}>{p.stock ? 'Còn hàng' : 'Hết hàng'}</Text></View>
+      <View style={s.productBottom}>
+        <View style={{ gap: 5 }}><Text style={s.price}>{money(p.price)}</Text>{p.oldPrice && <Text style={s.oldPrice}>{money(p.oldPrice)}</Text>}</View>
+        <Pressable accessibilityLabel={`Thêm ${p.name} vào giỏ hàng`} disabled={!p.stock} onPress={() => onAdd(p)} style={({ pressed }) => [s.addSmall, (!p.stock || pressed) && { opacity: 0.5 }]}><Icon name="bag" size={14} color="#fff" /><Text style={{ color: '#fff', fontSize: 11, fontWeight: '600' }}>Thêm</Text></Pressable>
+      </View>
+    </View>
   </View>)}</View>;
 }
