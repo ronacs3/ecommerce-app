@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const base = (process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
+const base = (process.env.EXPO_PUBLIC_API_URL || 'https://backend-e-commerce-navy.vercel.app/api').replace(/\/+$/, '');
 
 async function get(path) {
   const response = await fetch(base + path, { headers: { Origin: 'http://localhost:3000' }, signal: AbortSignal.timeout(15000) });

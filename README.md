@@ -1,20 +1,17 @@
 # TechShop
 
-Frontend Expo SDK 57 / React Native / Expo Router với giao diện TechShop, kết nối backend được mô tả tại http://localhost:5000/api-docs/.
+Frontend Expo SDK 57 / React Native / Expo Router với giao diện TechShop, kết nối backend tại https://backend-e-commerce-navy.vercel.app/api (Tài liệu API Swagger: https://backend-e-commerce-navy.vercel.app/api-docs/).
 
-## Chạy với backend
-
-1. Khởi động backend ở cổng 5000.
-2. Chạy frontend:
+## Chạy frontend
 
 ```sh
 npm ci
 npm run web
 ```
 
-Mở http://localhost:3000. Backend hiện cho phép origin này qua CORS, không cho phép cổng 8081. Script `web` và `start` đã cấu hình cổng 3000.
+Mở http://localhost:3000 hoặc dùng ứng dụng Expo Go trên thiết bị di động.
 
-API mặc định là `http://localhost:5000/api` trên web/iOS simulator và `http://10.0.2.2:5000/api` trên Android emulator. Trên điện thoại thật, đặt `EXPO_PUBLIC_API_URL` thành địa chỉ IP LAN của máy chạy backend. Xem `.env.example`. Thay đổi biến môi trường cần khởi động lại Expo.
+API mặc định là `https://backend-e-commerce-navy.vercel.app/api` được cấu hình trong `.env` và `src/config/api.ts`. Bạn có thể thay đổi biến `EXPO_PUBLIC_API_URL` trong `.env` nếu cần chuyển sang máy chủ khác. Xem `.env.example`. Khi thay đổi biến môi trường cần khởi động lại Expo dev server.
 
 ## Chức năng đã ghép API
 
