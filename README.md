@@ -1,56 +1,76 @@
-# Welcome to your Expo app 👋
+# TechShop
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Frontend Expo SDK 57 / React Native / Expo Router với giao diện TechShop, kết nối backend được mô tả tại http://localhost:5000/api-docs/.
 
-## Get started
+## Chạy với backend
 
-1. Install dependencies
+1. Khởi động backend ở cổng 5000.
+2. Chạy frontend:
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```sh
+npm ci
+npm run web
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Mở http://localhost:3000. Backend hiện cho phép origin này qua CORS, không cho phép cổng 8081. Script `web` và `start` đã cấu hình cổng 3000.
 
-### Other setup steps
+API mặc định là `http://localhost:5000/api` trên web/iOS simulator và `http://10.0.2.2:5000/api` trên Android emulator. Trên điện thoại thật, đặt `EXPO_PUBLIC_API_URL` thành địa chỉ IP LAN của máy chạy backend. Xem `.env.example`. Thay đổi biến môi trường cần khởi động lại Expo.
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Chức năng đã ghép API
 
-## Learn more
+- GET /products, /categories: catalog thật, ánh xạ ID danh mục thành tên tiếng Việt. Lọc và tìm kiếm không dấu thực hiện trên catalog tại client để tránh sự khác biệt về category giữa dữ liệu và controller.
+- GET /products/:id: chi tiết sản phẩm và kiểm tra lại giá/tồn kho trước khi gửi đơn.
+- POST /users/login và /users: đăng nhập, đăng ký thật; GET /users/profile: khôi phục và kiểm tra phiên JWT.
+- POST /coupons/validate: xác nhận mã và danh mục áp dụng. Giảm giá chỉ tính trên các dòng sản phẩm phù hợp.
+- POST /orders: tạo đơn COD thật với địa chỉ, thành phố, mã bưu chính, quốc gia, product ID và số lượng. Tổng cuối cùng sử dụng phản hồi của backend.
+- GET /orders/myorders: đơn của người dùng; GET /orders: toàn bộ đơn cho Admin.
+- PUT /orders/:id/pay, /deliver, /cancel: xác nhận thanh toán/giao hàng hoặc hủy qua endpoint riêng, không mô phỏng việc đổi trạng thái tại client.
+- Admin: CRUD sản phẩm, xem người dùng, tạo/xóa mã giảm giá và thống kê /orders/stats.
+- Backend không có PUT mã giảm giá, vì vậy giao diện hỗ trợ tạo/xóa và không hiển thị nút bật/tắt giả.
 
-To learn more about developing your project with Expo, look at the following resources:
+Giỏ hàng và yêu thích là dữ liệu frontend vì API không có endpoint giỏ hàng. Khóa localStorage chứa địa chỉ backend để không trộn dữ liệu giữa các môi trường. Không dùng sản phẩm, đơn hàng hoặc mã giảm giá demo làm fallback khi API lỗi.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+JWT dùng sessionStorage trên web và Expo SecureStore trên native. Không lưu mật khẩu. Admin yêu cầu tài khoản `isAdmin`; backend vẫn kiểm tra JWT/quyền cho mọi yêu cầu bảo vệ. Đăng xuất hoặc 401 xóa phiên và dữ liệu đơn hàng riêng tư khỏi giao diện.
 
-## Join the community
+## Cấu trúc
 
-Join our community of developers creating universal apps.
+```text
+src/
+  app/                 # Route và root providers
+  pages/customer/      # Màn hình mua sắm, đăng nhập, tài khoản
+  pages/admin/         # Admin có kiểm tra quyền
+  components/          # UI dùng chung, sản phẩm, giỏ hàng, đơn hàng
+  layouts/             # Khung trang TechShop
+  contexts/            # AuthProvider, StoreProvider, trạng thái UI
+  hooks/               # useAuth, useShop, useCatalog, useCategories
+  services/api/        # HTTP client, DTO adapters, catalog, coupons, orders
+  services/            # Lưu JWT và giỏ/yêu thích
+  config/api.ts        # Base URL / URL ảnh
+  types/               # DTO backend và model frontend
+  data/                # State rỗng; fixtures sản phẩm chỉ dùng cho tests
+  utils/               # Tìm kiếm, tính tiền, mã giảm giá theo danh mục
+  styles/              # StyleSheet
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Kiểm tra
+
+```sh
+npm run lint
+npm run typecheck
+npm test
+npm run test:api-live
+npx expo export --platform web
+```
+
+`npm test` chạy 19 kiểm tra nghiệp vụ cùng kiểm tra hợp đồng API giả lập: ID chuỗi, category ID/tên/populated object, URL ảnh, mã theo danh mục, payload CRUD/đơn hàng, JWT và xử lý 401.
+
+`test:api-live` chỉ đọc sản phẩm/danh mục/chi tiết, kiểm tra CORS/preflight và 401 cho khách chưa đăng nhập. Không tạo tài khoản/đơn hàng, không gửi email và không thay đổi dữ liệu backend. Luồng ghi xác thực được kiểm tra bằng API giả lập; cần dùng tài khoản của bạn trên UI để kiểm tra end-to-end với backend.
+
+## Giới hạn hiện tại
+
+- Một số URL /images/... do backend trả về đang 404; frontend hiển thị placeholder, không dùng ảnh minh họa sai sản phẩm. Cần bổ sung ảnh/static serving ở backend.
+- Cart native giữ trong phiên chạy; JWT native được lưu an toàn bằng SecureStore.
+- Blog và nội dung chính sách/liên hệ là nội dung frontend. Chat AI, upload ảnh, đánh giá, quản lý danh mục và khôi phục mật khẩu chưa có UI kết nối trong phạm vi thay thế các chức năng hiện có.
+- Cổng thanh toán chưa có trong API. Đơn tạo với COD; Admin chỉ xác nhận thanh toán đã xảy ra.
+- Controller tạo đơn hiện tại chưa kiểm tra tồn kho nguyên tử/transaction và còn nhận phí ship/tax từ client. Frontend kiểm tra lại giá/tồn kho và tránh bấm gửi trùng, nhưng backend cần bổ sung validation/transaction trước khi vận hành thực tế. Không sửa mã nguồn backend trong lần tích hợp này.
+- Endpoint tạo đơn/đăng ký/giao hàng có thể gửi email thật khi người dùng thao tác. Các kiểm tra tự động không gọi các mutation này trên backend thật.

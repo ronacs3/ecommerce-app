@@ -1,18 +1,9 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
-
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
-
-SplashScreen.preventAutoHideAsync();
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
-  );
+import { Slot } from 'expo-router';
+import Head from 'expo-router/head';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StoreProvider } from '@/contexts/StoreProvider';
+import { StoreLayout } from '@/layouts/StoreLayout';
+import { AuthProvider } from '@/contexts/AuthProvider';
+export default function RootLayout() {
+  return <SafeAreaProvider><Head><title>TechShop — Cửa hàng công nghệ chính hãng</title><meta name="description" content="Khám phá laptop, điện thoại, phụ kiện và thiết bị công nghệ cùng TechShop. Trải nghiệm mua sắm thuận tiện, ưu đãi hấp dẫn." /></Head><AuthProvider><StoreProvider><StoreLayout><Slot /></StoreLayout></StoreProvider></AuthProvider></SafeAreaProvider>;
 }
