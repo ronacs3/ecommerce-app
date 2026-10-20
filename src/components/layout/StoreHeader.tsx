@@ -21,7 +21,11 @@ export function StoreHeader({ count, go, search, setSearch, openMenu }: Props) {
         <View style={[s.brandIcon, width < 450 && { width: 35, height: 35 }]}><Icon name="zap" size={24} color="#fff" /></View>
         <View><Text style={[s.logo, width < 450 && { fontSize: 23 }]}>Tech<Text style={{ color: green }}>Shop</Text></Text><Text style={s.logoSubtitle}>PREMIUM TECH</Text></View>
       </Pressable>
-      {!mobile && <View style={{ flex: 1, flexDirection: 'row', gap: 16, maxWidth: 630 }}>{searchField}<Pressable style={s.newsButton} onPress={() => go('/blog')}><Icon name="book" size={16} color="#115e59" /><Text style={s.topLink}>Tin tức</Text></Pressable></View>}
+      {!mobile && <View style={{ flex: 1, flexDirection: 'row', gap: 12, maxWidth: 680 }}>
+        {searchField}
+        {width >= 1080 && <Pressable style={[s.newsButton, { backgroundColor: '#fff1f2' }]} onPress={() => go('/promotions')}><Icon name="percent" size={15} color="#e11d48" /><Text style={[s.topLink, { color: '#e11d48' }]}>Ưu đãi</Text></Pressable>}
+        <Pressable style={s.newsButton} onPress={() => go('/blog')}><Icon name="book" size={16} color="#115e59" /><Text style={s.topLink}>Tin tức</Text></Pressable>
+      </View>}
       <View style={[s.headerActions, mobile && { gap: 12 }]}>
         <Pressable accessibilityLabel="Giỏ hàng" onPress={() => go('/cart')} style={s.bagButton}>
           <View style={s.cartIcon}><Icon name="bag" size={21} /><View style={s.cartBadge}><Text style={{ fontSize: 10, color: '#fff', fontWeight: '600' }}>{count}</Text></View></View>

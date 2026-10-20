@@ -3,6 +3,7 @@ import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { Button } from '@/components/common/Button';
 import { Icon } from '@/components/common/Icon';
 import { useShop } from '@/hooks/useShop';
+import { useStoreUI } from '@/hooks/useStoreUI';
 import { getProduct } from '@/services/api/catalog';
 import { errorMessage } from '@/services/api/http';
 import { s } from '@/styles/store';
@@ -12,6 +13,7 @@ import { ProductImage } from './ProductImage';
 
 function ProductDetails({ selected, compact, add }: { selected: Product; compact: boolean; add: (product: Product) => void }) {
   const shop = useShop();
+  const { go, setSelected } = useStoreUI();
   const [product, setProduct] = useState(selected);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -27,7 +29,11 @@ function ProductDetails({ selected, compact, add }: { selected: Product; compact
       <Text style={s.fieldLabel}>Mô tả sản phẩm</Text><Text style={s.sectionSubtitle}>{product.description || 'Chưa có mô tả.'}</Text>
       {!!product.numReviews && <Text style={s.sectionSubtitle}>★ {product.rating?.toFixed(1)} · {product.numReviews} đánh giá</Text>}
       <View style={{ padding: 15, borderRadius: 8, backgroundColor: '#f0fdfa' }}><Text style={{ fontSize: 12, color: '#115e59', lineHeight: 22 }}>✓ Còn {product.stock} sản phẩm{String.fromCharCode(10)}✓ Miễn phí giao hàng cho đơn từ 500.000đ</Text></View>
-      <Button disabled={loading || !!error || !product.stock} onPress={() => add(product)}>{product.stock ? 'Thêm vào giỏ hàng' : 'Tạm hết hàng'}</Button><Button secondary onPress={() => shop.favorite(product.id)}>{shop.favorites.includes(product.id) ? 'Đã lưu yêu thích ♥' : 'Thêm vào yêu thích ♡'}</Button>
+      <Button disabled={loading || !!error || !product.stock} onPress={() => add(product)}>{product.stock ? 'Thêm vào giỏ hàng' : 'Tạm hết hàng'}</Button>
+      <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+        <View style={{ flex: 1, minWidth: 140 }}><Button secondary onPress={() => shop.favorite(product.id)}>{shop.favorites.includes(product.id) ? 'Đã lưu ♥' : 'Yêu thích ♡'}</Button></View>
+        <View style={{ flex: 1, minWidth: 140 }}><Button secondary onPress={() => { setSelected(null); go(`/product?id=${product.id}`); }}>Xem chi tiết đầy đủ ↗</Button></View>
+      </View>
     </View>
   </ScrollView>;
 }

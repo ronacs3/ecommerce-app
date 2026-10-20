@@ -50,10 +50,14 @@ export function StoreLayout({ children }: { children: ReactNode }) {
             <View style={s.hotBadge}><Text style={s.hotText}>HOT</Text></View>
             <Text numberOfLines={1} style={[s.announcementText, compact && { fontSize: 10 }]}>Thiết bị công nghệ chính hãng — khám phá ưu đãi mỗi ngày</Text>
           </View>
-          {!compact && <View style={{ flexDirection: 'row', gap: 18 }}>
-            <Pressable onPress={() => go('/blog')}><Text style={s.announcementText}>Tin tức công nghệ</Text></Pressable>
+          {!compact && <View style={{ flexDirection: 'row', gap: 16 }}>
+            <Pressable onPress={() => go('/promotions')}><Text style={[s.announcementText, { color: '#2dd4bf', fontWeight: '700' }]}>⚡ Khuyến mãi</Text></Pressable>
             <Text style={s.announcementText}>|</Text>
-            <Pressable onPress={() => go('/account')}><Text style={s.announcementText}>Tra cứu đơn hàng</Text></Pressable>
+            <Pressable onPress={() => go('/compare')}><Text style={s.announcementText}>So sánh</Text></Pressable>
+            <Text style={s.announcementText}>|</Text>
+            <Pressable onPress={() => go('/tracking')}><Text style={s.announcementText}>Tra cứu đơn hàng</Text></Pressable>
+            <Text style={s.announcementText}>|</Text>
+            <Pressable onPress={() => go('/contact')}><Text style={s.announcementText}>Liên hệ</Text></Pressable>
           </View>}
         </View>
       </View>
